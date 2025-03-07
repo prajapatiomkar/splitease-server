@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { IRequest } from "../interfaces/user.interface";
 
 export interface AuthRequest extends Request {
   user?: { id: string }; // Extend Request type to include user

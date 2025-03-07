@@ -1,41 +1,39 @@
 import express, { Request, Response } from "express";
 import { authenticateUser } from "../middleware/auth.middleware";
 import User from "../models/user.model";
+import { createGroup, getUserGroups } from "../controllers/user.controller";
+import { IRequest } from "../interfaces/user.interface";
 
 const router = express.Router();
-
-interface IUser {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface IRequest extends Request {
-  user?: IUser;
-}
 
 // Example protected route
 router.get(
   "/profile",
   authenticateUser,
-  async (req: IRequest, res: Response): Promise<void> => {
-    // ✅ Return type is `Promise<void>`
+  async (req: Request, res: Response): Promise<any> => {
     try {
-      console.log(req.user?.id, "req.user?.id");
+      const typedReq = req as unknown as IRequest;
+      console.log(typedReq?.user?.id as string, "req.user?.id");
 
-      const user = await User.findById(req.user?.id).select("name email");
+      const user = await User.findById(typedReq?.user?.id as string).select(
+        "name email"
+      );
 
       if (!user) {
         res.status(404).json({ message: "User not found" }); // ✅ No `return` needed
         return;
       }
 
-      res.json({ message: "Access granted", user }); // ✅ No `return` needed
+      res.json({ message: "Access granted", user });
+      return;
     } catch (error) {
       console.error("Error fetching user profile:", error);
       res.status(500).json({ message: "Internal Server Error" });
+      return;
     }
   }
 );
 
+router.post("/create-group", authenticateUser, createGroup);
+router.get("/get-group", authenticateUser, getUserGroups);
 export default router;
